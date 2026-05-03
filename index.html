@@ -193,7 +193,7 @@ async function predict() {
 console.log("SENDING DATA:", data);
 
   try {
-    const res = await fetch("https://titanic-survival-predictor-wlwi.onrender.com/", {
+    const res = await fetch("https://titanic-survival-predictor-wlwi.onrender.com/predict", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(data)
