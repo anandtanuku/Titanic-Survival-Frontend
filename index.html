@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Titanic Predictor</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .container {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 12px;
+      width: 400px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: none;
+      background: #334155;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #3b82f6;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    .examples {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .examples button {
+      width: 48%;
+      background: #475569;
+    }
+
+    .clear-btn {
+      background: #64748b;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    .success { background: #16a34a; }
+    .fail { background: #dc2626; }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>🚢 Titanic Survival Predictor</h2>
+
+  <!-- Example buttons -->
+  <div class="examples">
+    <button onclick="fillExample('poorMale')">🧑 Poor Male</button>
+    <button onclick="fillExample('richFemale')">👩 Rich Female</button>
+  </div>
+
+  <!-- Inputs -->
+  <input id="name" placeholder="e.g. Braund, Mr. Owen Harris">
+
+  <select id="pclass">
+    <option value="">Passenger Class</option>
+    <option value="1">1st Class</option>
+    <option value="2">2nd Class</option>
+    <option value="3">3rd Class</option>
+  </select>
+
+  <select id="sex">
+    <option value="">Gender</option>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+  </select>
+
+  <input id="age" type="number" placeholder="Age (e.g. 22)">
+  <input id="sibsp" type="number" placeholder="Siblings/Spouse (e.g. 1)">
+  <input id="parch" type="number" placeholder="Parents/Children (e.g. 0)">
+  <input id="fare" type="number" placeholder="Fare (e.g. 7.25)">
+
+  <!-- Fixed Embarked -->
+  <select id="embarked">
+    <option value="">Embarked</option>
+    <option value="C">C - Cherbourg</option>
+    <option value="Q">Q - Queenstown</option>
+    <option value="S">S - Southampton</option>
+  </select>
+
+  <!-- Buttons -->
+  <button onclick="predict()">Predict</button>
+  <button onclick="clearForm()" class="clear-btn">Clear Fields</button>
+
+  <!-- Result -->
+  <div id="result" class="result" style="display:none;"></div>
+
+</div>
+
+<script>
+
+// Example presets
+function fillExample(type) {
+  if (type === "poorMale") {
+    name.value = "Smith, Mr. John";
+    pclass.value = 3;
+    sex.value = "male";
+    age.value = 25;
+    sibsp.value = 0;
+    parch.value = 0;
+    fare.value = 7.25;
+    embarked.value = "S";
+  }
+
+  if (type === "richFemale") {
+    name.value = "Cumings, Mrs. John";
+    pclass.value = 1;
+    sex.value = "female";
+    age.value = 38;
+    sibsp.value = 1;
+    parch.value = 0;
+    fare.value = 71.28;
+    embarked.value = "C";
+  }
+}
+
+// Clear form
+function clearForm() {
+  name.value = "";
+  pclass.value = "";
+  sex.value = "";
+  age.value = "";
+  sibsp.value = "";
+  parch.value = "";
+  fare.value = "";
+  embarked.value = "";
+
+  document.getElementById("result").style.display = "none";
+}
+
+// Predict
+async function predict() {
+
+  const resultBox = document.getElementById("result");
+
+  resultBox.style.display = "block";
+  resultBox.className = "result";
+  resultBox.innerText = "⏳ Predicting...";
+
+  const data = {
+  Name: document.getElementById("name").value,
+  Pclass: Number(pclass.value),
+  Sex: sex.value,
+  Age: Number(age.value),
+  SibSp: Number(sibsp.value),
+  Parch: Number(parch.value),
+  Fare: Number(fare.value),
+  Embarked: embarked.value
+};
+
+console.log("SENDING DATA:", data);
+
+  try {
+    const res = await fetch("https://titanic-survival-predictor-wlwi.onrender.com/", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+    console.log(result);
+
+    console.log("API RESPONSE:", result);
+
+    const conf = result.confidence ?? "N/A";
+
+    if (result.prediction === 1) {
+      resultBox.className = "result success";
+      resultBox.innerText = `✅ Survived (${conf})`;
+    } else {
+      resultBox.className = "result fail";
+      resultBox.innerText = `❌ Did not survive (${conf})`;
+    }
+
+  } catch (err) {
+    console.log(err);
+    resultBox.className = "result fail";
+    resultBox.innerText = "❌ Error connecting to API";
+  }
+}
+
+</script>
+
+</body>
+</html>
